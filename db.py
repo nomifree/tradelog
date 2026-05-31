@@ -110,7 +110,7 @@ def _rows_as_dicts(cur, rows):
 
 def _fetchall(sql, params=()):
     conn = get_conn()
-    cur = conn.execute(sql, params)
+    cur = conn.execute(sql, tuple(params))
     rows = cur.fetchall()
     return _rows_as_dicts(cur, rows)
 
@@ -122,7 +122,7 @@ def insert_trade(data: dict) -> int:
         f"INSERT INTO trades (created_at, updated_at, {', '.join(cols)}) "
         f"VALUES (?, ?, {placeholders})"
     )
-    params = [_now(), _now()] + [data[c] for c in cols]
+    params = tuple([_now(), _now()] + [data[c] for c in cols])
     conn = get_conn()
     cur = conn.execute(sql, params)
     _commit_and_push(conn)
@@ -135,7 +135,7 @@ def update_trade(trade_id: int, data: dict):
         return
     set_clause = ", ".join(f"{c}=?" for c in cols)
     sql = f"UPDATE trades SET updated_at=?, {set_clause} WHERE id=?"
-    params = [_now()] + [data[c] for c in cols] + [trade_id]
+    params = tuple([_now()] + [data[c] for c in cols] + [trade_id])
     conn = get_conn()
     conn.execute(sql, params)
     _commit_and_push(conn)
